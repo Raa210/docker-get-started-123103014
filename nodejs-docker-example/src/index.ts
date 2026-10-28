@@ -7,7 +7,7 @@ import express, { type Request, type Response } from "express";
 import { Pool } from "pg";
 import { readFileSync } from "fs";
 
-const app = express();
+export const app = express();
 const port = parseInt(process.env.PORT ?? "3000", 10);
 
 app.use(express.json());
@@ -28,19 +28,21 @@ const pool = new Pool({
   password: getPassword(),
 });
 
-pool
-  .query(
-    `CREATE TABLE IF NOT EXISTS heroes (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL,
-      secret_name TEXT NOT NULL,
-      age INTEGER
-    )`,
-  )
-  .catch(console.error);
+if (process.env.POSTGRES_SERVER) {
+  pool
+    .query(
+      `CREATE TABLE IF NOT EXISTS heroes (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        secret_name TEXT NOT NULL,
+        age INTEGER
+      )`,
+    )
+    .catch(console.error);
+}
 
 app.get("/", (_req: Request, res: Response) => {
-  res.json({ message: "Hello World !!!" });
+  res.json({ message: "Hello World" });
 });
 
 app.get("/health", (_req: Request, res: Response) => {
@@ -65,6 +67,9 @@ app.get("/heroes/", async (_req: Request, res: Response) => {
   res.json(result.rows);
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+// Only start the server when this file is run directly.
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}

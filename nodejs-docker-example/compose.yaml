@@ -5,6 +5,7 @@ services:
       target: dev
     ports:
       - 3000:3000
+      - 9229:9229
     environment:
       - POSTGRES_SERVER=db
       - POSTGRES_USER=postgres
